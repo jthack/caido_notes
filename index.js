@@ -37,14 +37,14 @@ var createNotesUI = () => {
   notesHeader.className = "notes-header";
   notesHeader.textContent = "Notes";
 
-  const notesInput = document.createElement("input");
+  const notesInput = document.createElement("textarea");
   notesInput.className = "notes-input";
   notesInput.placeholder = "Enter a new note...";
 
   const addNoteButton = Caido.ui.button({
     label: "Add Note",
     variant: "primary",
-    size: "small",
+    size: "medium",
   });
   addNoteButton.addEventListener("click", () => {
     const noteText = notesInput.value.trim();
@@ -55,41 +55,48 @@ var createNotesUI = () => {
     }
   });
 
-  const notesList = document.createElement("ul");
-  notesList.className = "notes-list";
+  const notesTable = document.createElement("table");
+  notesTable.className = "notes-table";
 
   const renderNotes = () => {
     const notes = getNotes();
-    notesList.innerHTML = "";
+    notesTable.innerHTML = `
+      <thead>
+        <tr>
+          <th>Note</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${notes
+          .map(
+            (note) => `
+          <tr>
+            <td>${note.text}</td>
+            <td>
+              <button class="delete-button" data-id="${note.id}">Delete</button>
+            </td>
+          </tr>
+        `
+          )
+          .join("")}
+      </tbody>
+    `;
 
-    notes.forEach((note) => {
-      const noteItem = document.createElement("li");
-      noteItem.className = "note-item";
-
-      const noteText = document.createElement("span");
-      noteText.className = "note-text";
-      noteText.textContent = note.text;
-
-      const deleteButton = Caido.ui.button({
-        leadingIcon: "fas fa-trash",
-        variant: "tertiary",
-        size: "small",
-      });
-      deleteButton.addEventListener("click", () => {
-        deleteNote(note.id);
+    const deleteButtons = notesTable.querySelectorAll(".delete-button");
+    deleteButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const noteId = button.getAttribute("data-id");
+        deleteNote(noteId);
         renderNotes();
       });
-
-      noteItem.appendChild(noteText);
-      noteItem.appendChild(deleteButton);
-      notesList.appendChild(noteItem);
     });
   };
 
   notesContainer.appendChild(notesHeader);
   notesContainer.appendChild(notesInput);
   notesContainer.appendChild(addNoteButton);
-  notesContainer.appendChild(notesList);
+  notesContainer.appendChild(notesTable);
 
   renderNotes();
 
